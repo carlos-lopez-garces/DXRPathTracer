@@ -40,6 +40,7 @@ static const int Scenes_Sponza = 0;
 static const int Scenes_SunTemple = 1;
 static const int Scenes_BoxTest = 2;
 static const int Scenes_WhiteFurnace = 3;
+static const int Scenes_Cylinder = 4;
 
 static const int ClusterRasterizationModes_Normal = 0;
 static const int ClusterRasterizationModes_MSAA4x = 1;
