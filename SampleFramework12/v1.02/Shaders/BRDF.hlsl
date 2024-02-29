@@ -10,6 +10,9 @@
 #ifndef BRDF_HLSL_
 #define BRDF_HLSL_
 
+#include <RayTracing.hlsl>
+#include <Sampling.hlsl>
+
 //-------------------------------------------------------------------------------------------------
 // Calculates the Fresnel factor using Schlick's approximation
 //-------------------------------------------------------------------------------------------------
@@ -258,6 +261,55 @@ float3 CalcLighting(in float3 normal, in float3 lightDir, in float3 peakIrradian
     }
 
     return lighting * nDotL * peakIrradiance;
+}
+
+float OrenNayarBRDF_Pdf(float3 wo, float3 wi) {
+    return SameHemisphere(wo, wi) ? AbsCosTheta(wi) * InvPi : 0;
+}
+
+float3 OrenNayarBRDF_f(float3 wo, float3 wi, float3 R, float A, float B) {
+    float sinThetaI = SinTheta(wi);
+    float sinThetaO = SinTheta(wo);
+
+    // Compute cosine term of Oren-Nayar model.
+    float maxCos = 0;
+    if (sinThetaI > 1e-4 && sinThetaO > 1e-4) {
+        float sinPhiI = SinPhi(wi), cosPhiI = CosPhi(wi);
+        float sinPhiO = SinPhi(wo), cosPhiO = CosPhi(wo);
+        float dCos = cosPhiI * cosPhiO + sinPhiI * sinPhiO;
+        maxCos = max((float)0, dCos);
+    }
+
+    // Compute sine and tangent terms of Oren-Nayar model.
+    float sinAlpha, tanBeta;
+    if (AbsCosTheta(wi) > AbsCosTheta(wo)) {
+        sinAlpha = sinThetaO;
+        tanBeta = sinThetaI / AbsCosTheta(wi);
+    } else {
+        sinAlpha = sinThetaI;
+        tanBeta = sinThetaO / AbsCosTheta(wo);
+    }
+    return R * InvPi * (A + B * maxCos * sinAlpha * tanBeta);
+}
+
+float3 OrenNayarBRDF_Sample_f(
+    in float3 wo, inout float3 wi, in float2 u, inout float pdf, float3 R, float sigma
+) {
+    wi = SampleDirectionCosineHemisphere(u.x, u.y);
+
+    if (wo.z < 0) {
+        // Bring wi to the same hemisphere as wo.
+        wi.z *= -1;
+    }
+
+    pdf = OrenNayarBRDF_Pdf(wo, wi);
+
+    sigma = radians(sigma);
+    float sigma2 = sigma * sigma;
+    float A = 1.f - (sigma2 / (2.f * (sigma2 + 0.33f)));
+    float B = 0.45f * sigma2 / (sigma2 + 0.09f);
+
+    return OrenNayarBRDF_f(wo, wi, R, A, B);
 }
 
 #endif // BRDF_HLSL_
