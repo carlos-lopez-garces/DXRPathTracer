@@ -68,6 +68,7 @@ namespace AppSettings
     BoolSetting EnableWhiteFurnaceMode;
     BoolSetting AlwaysResetPathTrace;
     BoolSetting ShowProgressBar;
+    FloatSetting OrenNayarSigma;
 
     ConstantBuffer CBuffer;
     const uint32 CBufferRegister = 12;
@@ -75,13 +76,15 @@ namespace AppSettings
     void Initialize()
     {
 
-        Settings.Initialize(7);
+        Settings.Initialize(8);
 
         Settings.AddGroup("Sun And Sky", true);
 
         Settings.AddGroup("Anti Aliasing", false);
 
         Settings.AddGroup("Scene", true);
+
+        Settings.AddGroup("Materials", true);
 
         Settings.AddGroup("Rendering", false);
 
@@ -203,6 +206,9 @@ namespace AppSettings
         ShowProgressBar.Initialize("ShowProgressBar", "Debug", "Show Progress Bar", "", true);
         Settings.AddSetting(&ShowProgressBar);
 
+        OrenNayarSigma.Initialize("OrenNayarSigma", "Materials", "Oren-Nayar Sigma", "Standard deviation of the microfacet orientation angle", 0, 0, 360, 0.5, ConversionMode::None, 1.0000f);
+        Settings.AddSetting(&OrenNayarSigma);
+
         ConstantBufferInit cbInit;
         cbInit.Size = sizeof(AppSettingsCBuffer);
         cbInit.Dynamic = true;
@@ -247,6 +253,7 @@ namespace AppSettings
         cbData.RoughnessScale = RoughnessScale;
         cbData.MetallicScale = MetallicScale;
         cbData.EnableWhiteFurnaceMode = EnableWhiteFurnaceMode;
+        cbData.OrenNayarSigma = OrenNayarSigma;
 
         CBuffer.MapAndSetData(cbData);
     }

@@ -28,6 +28,7 @@ struct AppSettings_Layout
     float RoughnessScale;
     float MetallicScale;
     bool EnableWhiteFurnaceMode;
+    float OrenNayarSigma;
 };
 
 ConstantBuffer<AppSettings_Layout> AppSettings : register(b12);

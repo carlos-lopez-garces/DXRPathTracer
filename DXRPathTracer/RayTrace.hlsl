@@ -376,7 +376,7 @@ static float3 PathTrace(in MeshVertex hitSurface, in Material material, in Prima
     float3 wi, wiW;
     float pdf;
     float3 n = float3(0, 0, 1);
-    float sigma = 30;
+    float sigma = AppSettings.OrenNayarSigma;
 
     float3 f = OrenNayarBRDF_Sample_f(wo, wi, brdfSample, pdf, diffuseAlbedo, sigma);
 
