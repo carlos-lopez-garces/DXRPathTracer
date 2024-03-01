@@ -375,10 +375,16 @@ static float3 PathTrace(in MeshVertex hitSurface, in Material material, in Prima
     float3 wo = normalize(mul(woW, worldToTangent));
     float3 wi, wiW;
     float pdf;
+    float3 f;
     float3 n = float3(0, 0, 1);
-    float sigma = AppSettings.OrenNayarSigma;
 
-    float3 f = OrenNayarBRDF_Sample_f(wo, wi, brdfSample, pdf, diffuseAlbedo, sigma);
+    if (AppSettings.UseOrenNayarDiffuse) {
+        float sigma = AppSettings.OrenNayarSigma;
+
+        f = OrenNayarBRDF_Sample_f(wo, wi, brdfSample, pdf, diffuseAlbedo, sigma);
+    } else {
+        f = LambertBRDF_Sample_f(wo, wi, brdfSample, pdf, diffuseAlbedo);
+    }
 
     throughput = f * AbsDot(wi, n) / pdf;
 

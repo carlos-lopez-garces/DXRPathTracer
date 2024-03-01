@@ -69,6 +69,7 @@ namespace AppSettings
     BoolSetting AlwaysResetPathTrace;
     BoolSetting ShowProgressBar;
     FloatSetting OrenNayarSigma;
+    BoolSetting UseOrenNayarDiffuse;
 
     ConstantBuffer CBuffer;
     const uint32 CBufferRegister = 12;
@@ -206,6 +207,9 @@ namespace AppSettings
         ShowProgressBar.Initialize("ShowProgressBar", "Debug", "Show Progress Bar", "", true);
         Settings.AddSetting(&ShowProgressBar);
 
+        UseOrenNayarDiffuse.Initialize("UseOrenNayarDiffuse", "Materials", "Use Oren-Nayar Diffuse BRDF", "Use Oren-Nayar Diffuse BRDF. Lambert BRDF otherwise", false);
+        Settings.AddSetting(&UseOrenNayarDiffuse);
+
         OrenNayarSigma.Initialize("OrenNayarSigma", "Materials", "Oren-Nayar Sigma", "Standard deviation of the microfacet orientation angle", 0, 0, 360, 0.5, ConversionMode::None, 1.0000f);
         Settings.AddSetting(&OrenNayarSigma);
 
@@ -254,6 +258,7 @@ namespace AppSettings
         cbData.MetallicScale = MetallicScale;
         cbData.EnableWhiteFurnaceMode = EnableWhiteFurnaceMode;
         cbData.OrenNayarSigma = OrenNayarSigma;
+        cbData.UseOrenNayarDiffuse = UseOrenNayarDiffuse;
 
         CBuffer.MapAndSetData(cbData);
     }

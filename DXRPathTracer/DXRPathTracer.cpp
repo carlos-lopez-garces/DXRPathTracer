@@ -964,7 +964,8 @@ void DXRPathTracer::Update(const Timer& timer)
         &AppSettings::AvoidCausticPaths,
         &AppSettings::ClampRoughness,
         &AppSettings::ApplyMultiscatteringEnergyCompensation,
-        &AppSettings::OrenNayarSigma
+        &AppSettings::OrenNayarSigma,
+        &AppSettings::UseOrenNayarDiffuse
     };
 
     for(const Setting* setting : settingsToCheck)

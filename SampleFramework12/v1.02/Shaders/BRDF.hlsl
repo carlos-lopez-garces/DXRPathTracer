@@ -263,8 +263,31 @@ float3 CalcLighting(in float3 normal, in float3 lightDir, in float3 peakIrradian
     return lighting * nDotL * peakIrradiance;
 }
 
-float OrenNayarBRDF_Pdf(float3 wo, float3 wi) {
+float LambertBRDF_Pdf(float3 wo, float3 wi) {
     return SameHemisphere(wo, wi) ? AbsCosTheta(wi) * InvPi : 0;
+}
+
+float3 LambertBRDF_f(float3 wo, float3 wi, float3 R) {
+    return R * InvPi;
+}
+
+float3 LambertBRDF_Sample_f(
+    in float3 wo, inout float3 wi, in float2 u, inout float pdf, float3 R
+) {
+    wi = SampleDirectionCosineHemisphere(u.x, u.y);
+
+    if (wo.z < 0) {
+        // Bring wi to the same hemisphere as wo.
+        wi.z *= -1;
+    }
+
+    pdf = LambertBRDF_Pdf(wo, wi);
+
+    return LambertBRDF_f(wo, wi, R);
+}
+
+float OrenNayarBRDF_Pdf(float3 wo, float3 wi) {
+    return LambertBRDF_Pdf(wo, wi);
 }
 
 float3 OrenNayarBRDF_f(float3 wo, float3 wi, float3 R, float A, float B) {
