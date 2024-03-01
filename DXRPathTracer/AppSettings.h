@@ -23,6 +23,7 @@ enum class Scenes
     SunTemple = 1,
     BoxTest = 2,
     WhiteFurnace = 3,
+    Cylinder = 4,
 
     NumValues
 };
@@ -91,6 +92,8 @@ namespace AppSettings
     extern BoolSetting EnableWhiteFurnaceMode;
     extern BoolSetting AlwaysResetPathTrace;
     extern BoolSetting ShowProgressBar;
+    extern BoolSetting UseOrenNayarDiffuse;
+    extern FloatSetting OrenNayarSigma;
 
     struct AppSettingsCBuffer
     {
@@ -122,6 +125,8 @@ namespace AppSettings
         float RoughnessScale;
         float MetallicScale;
         bool32 EnableWhiteFurnaceMode;
+        float OrenNayarSigma;
+        bool32 UseOrenNayarDiffuse;
     };
 
     extern ConstantBuffer CBuffer;

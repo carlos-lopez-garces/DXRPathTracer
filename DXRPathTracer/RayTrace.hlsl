@@ -324,51 +324,71 @@ static float3 PathTrace(in MeshVertex hitSurface, in Material material, in Prima
     else if(enableDiffuse == false)
         selector = 1.0f;
 
-    if(selector < 0.5f)
-    {
-        // We're sampling the diffuse BRDF, so sample a cosine-weighted hemisphere
-        if(enableSpecular)
-            brdfSample.x *= 2.0f;
-        rayDirTS = SampleDirectionCosineHemisphere(brdfSample.x, brdfSample.y);
+    // if(selector < 0.5f)
+    // {
+    //     // We're sampling the diffuse BRDF, so sample a cosine-weighted hemisphere
+    //     if(enableSpecular)
+    //         brdfSample.x *= 2.0f;
+    //     rayDirTS = SampleDirectionCosineHemisphere(brdfSample.x, brdfSample.y);
 
-        // The PDF of sampling a cosine hemisphere is NdotL / Pi, which cancels out those terms
-        // from the diffuse BRDF and the irradiance integral
-        throughput = diffuseAlbedo;
+    //     // The PDF of sampling a cosine hemisphere is NdotL / Pi, which cancels out those terms
+    //     // from the diffuse BRDF and the irradiance integral
+    //     throughput = diffuseAlbedo;
+    // }
+    // else
+    // {
+    //     // We're sampling the GGX specular BRDF by sampling the distribution of visible normals. See this post
+    //     // for more info: https://schuttejoe.github.io/post/ggximportancesamplingpart2/.
+    //     // Also see: https://hal.inria.fr/hal-00996995v1/document and https://hal.archives-ouvertes.fr/hal-01509746/document
+    //     if(enableDiffuse)
+    //         brdfSample.x = (brdfSample.x - 0.5f) * 2.0f;
+
+    //     float3 incomingRayDirTS = normalize(mul(incomingRayDirWS, transpose(tangentToWorld)));
+    //     float3 microfacetNormalTS = SampleGGXVisibleNormal(-incomingRayDirTS, roughness, roughness, brdfSample.x, brdfSample.y);
+    //     float3 sampleDirTS = reflect(incomingRayDirTS, microfacetNormalTS);
+
+    //     float3 normalTS = float3(0.0f, 0.0f, 1.0f);
+
+    //     float3 F = AppSettings.EnableWhiteFurnaceMode ? 1.0.xxx : Fresnel(specularAlbedo, microfacetNormalTS, sampleDirTS);
+    //     float G1 = SmithGGXMasking(normalTS, sampleDirTS, -incomingRayDirTS, roughness * roughness);
+    //     float G2 = SmithGGXMaskingShadowing(normalTS, sampleDirTS, -incomingRayDirTS, roughness * roughness);
+
+    //     throughput = (F * (G2 / G1));
+    //     rayDirTS = sampleDirTS;
+
+    //     if(AppSettings.ApplyMultiscatteringEnergyCompensation)
+    //     {
+    //         float2 DFG = GGXEnvironmentBRDFScaleBias(saturate(dot(normalTS, -incomingRayDirWS)), sqrtRoughness);
+
+    //         // Improve energy preservation by applying a scaled version of the original
+    //         // single scattering specular lobe. Based on "Practical multiple scattering
+    //         // compensation for microfacet models" [Turquin19].
+    //         //
+    //         // See: https://blog.selfshadow.com/publications/turquin/ms_comp_final.pdf
+    //         float Ess = DFG.x;
+    //         throughput *= 1.0.xxx + specularAlbedo * (1.0f / Ess - 1.0f);
+    //     }
+    // }
+
+    float3x3 worldToTangent = transpose(tangentToWorld);
+    float3 woW = -incomingRayDirWS;
+    float3 wo = normalize(mul(woW, worldToTangent));
+    float3 wi, wiW;
+    float pdf;
+    float3 f;
+    float3 n = float3(0, 0, 1);
+
+    if (AppSettings.UseOrenNayarDiffuse) {
+        float sigma = AppSettings.OrenNayarSigma;
+
+        f = OrenNayarBRDF_Sample_f(wo, wi, brdfSample, pdf, diffuseAlbedo, sigma);
+    } else {
+        f = LambertBRDF_Sample_f(wo, wi, brdfSample, pdf, diffuseAlbedo);
     }
-    else
-    {
-        // We're sampling the GGX specular BRDF by sampling the distribution of visible normals. See this post
-        // for more info: https://schuttejoe.github.io/post/ggximportancesamplingpart2/.
-        // Also see: https://hal.inria.fr/hal-00996995v1/document and https://hal.archives-ouvertes.fr/hal-01509746/document
-        if(enableDiffuse)
-            brdfSample.x = (brdfSample.x - 0.5f) * 2.0f;
 
-        float3 incomingRayDirTS = normalize(mul(incomingRayDirWS, transpose(tangentToWorld)));
-        float3 microfacetNormalTS = SampleGGXVisibleNormal(-incomingRayDirTS, roughness, roughness, brdfSample.x, brdfSample.y);
-        float3 sampleDirTS = reflect(incomingRayDirTS, microfacetNormalTS);
+    throughput = f * AbsDot(wi, n) / pdf;
 
-        float3 normalTS = float3(0.0f, 0.0f, 1.0f);
-
-        float3 F = AppSettings.EnableWhiteFurnaceMode ? 1.0.xxx : Fresnel(specularAlbedo, microfacetNormalTS, sampleDirTS);
-        float G1 = SmithGGXMasking(normalTS, sampleDirTS, -incomingRayDirTS, roughness * roughness);
-        float G2 = SmithGGXMaskingShadowing(normalTS, sampleDirTS, -incomingRayDirTS, roughness * roughness);
-
-        throughput = (F * (G2 / G1));
-        rayDirTS = sampleDirTS;
-
-        if(AppSettings.ApplyMultiscatteringEnergyCompensation)
-        {
-            float2 DFG = GGXEnvironmentBRDFScaleBias(saturate(dot(normalTS, -incomingRayDirWS)), sqrtRoughness);
-
-            // Improve energy preservation by applying a scaled version of the original
-            // single scattering specular lobe. Based on "Practical multiple scattering
-            // compensation for microfacet models" [Turquin19].
-            //
-            // See: https://blog.selfshadow.com/publications/turquin/ms_comp_final.pdf
-            float Ess = DFG.x;
-            throughput *= 1.0.xxx + specularAlbedo * (1.0f / Ess - 1.0f);
-        }
-    }
+    rayDirTS = wi;
 
     const float3 rayDirWS = normalize(mul(rayDirTS, tangentToWorld));
 

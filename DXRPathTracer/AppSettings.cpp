@@ -16,6 +16,7 @@ static const char* ScenesLabels[] =
     "SunTemple",
     "BoxTest",
     "WhiteFurnace",
+    "Cylinder",
 };
 
 static const char* ClusterRasterizationModesLabels[] =
@@ -67,6 +68,8 @@ namespace AppSettings
     BoolSetting EnableWhiteFurnaceMode;
     BoolSetting AlwaysResetPathTrace;
     BoolSetting ShowProgressBar;
+    FloatSetting OrenNayarSigma;
+    BoolSetting UseOrenNayarDiffuse;
 
     ConstantBuffer CBuffer;
     const uint32 CBufferRegister = 12;
@@ -74,13 +77,15 @@ namespace AppSettings
     void Initialize()
     {
 
-        Settings.Initialize(7);
+        Settings.Initialize(8);
 
         Settings.AddGroup("Sun And Sky", true);
 
         Settings.AddGroup("Anti Aliasing", false);
 
         Settings.AddGroup("Scene", true);
+
+        Settings.AddGroup("Materials", true);
 
         Settings.AddGroup("Rendering", false);
 
@@ -114,7 +119,7 @@ namespace AppSettings
         MSAAMode.Initialize("MSAAMode", "Anti Aliasing", "MSAA Mode", "MSAA mode to use for rendering", MSAAModes::MSAA4x, 3, MSAAModesLabels);
         Settings.AddSetting(&MSAAMode);
 
-        CurrentScene.Initialize("CurrentScene", "Scene", "Current Scene", "", Scenes::BoxTest, 4, ScenesLabels);
+        CurrentScene.Initialize("CurrentScene", "Scene", "Current Scene", "", Scenes::BoxTest, 5, ScenesLabels);
         Settings.AddSetting(&CurrentScene);
 
         RenderLights.Initialize("RenderLights", "Scene", "Render Lights", "Enable or disable spot light rendering", true);
@@ -202,6 +207,12 @@ namespace AppSettings
         ShowProgressBar.Initialize("ShowProgressBar", "Debug", "Show Progress Bar", "", true);
         Settings.AddSetting(&ShowProgressBar);
 
+        UseOrenNayarDiffuse.Initialize("UseOrenNayarDiffuse", "Materials", "Use Oren-Nayar Diffuse BRDF", "Use Oren-Nayar Diffuse BRDF. Lambert BRDF otherwise", false);
+        Settings.AddSetting(&UseOrenNayarDiffuse);
+
+        OrenNayarSigma.Initialize("OrenNayarSigma", "Materials", "Oren-Nayar Sigma", "Standard deviation of the microfacet orientation angle", 0, 0, 360, 0.5, ConversionMode::None, 1.0000f);
+        Settings.AddSetting(&OrenNayarSigma);
+
         ConstantBufferInit cbInit;
         cbInit.Size = sizeof(AppSettingsCBuffer);
         cbInit.Dynamic = true;
@@ -246,6 +257,8 @@ namespace AppSettings
         cbData.RoughnessScale = RoughnessScale;
         cbData.MetallicScale = MetallicScale;
         cbData.EnableWhiteFurnaceMode = EnableWhiteFurnaceMode;
+        cbData.OrenNayarSigma = OrenNayarSigma;
+        cbData.UseOrenNayarDiffuse = UseOrenNayarDiffuse;
 
         CBuffer.MapAndSetData(cbData);
     }
