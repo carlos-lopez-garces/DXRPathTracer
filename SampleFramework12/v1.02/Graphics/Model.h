@@ -161,7 +161,7 @@ public:
     }
 
     // Init from loaded files
-    void InitFromAssimpMesh(const aiMesh& assimpMesh, float sceneScale,
+    void InitFromAssimpMesh(const aiMesh& assimpMesh, const Float4x4& sceneRotation, float sceneScale,
                             MeshVertex* dstVertices, uint8* dstIndices, IndexType indexType);
 
     // Procedural generation
@@ -242,6 +242,7 @@ struct ModelLoadSettings
     const wchar* FilePath = nullptr;
     const wchar* TextureDir = nullptr;
     float SceneScale = 1.0f;
+    Float4x4 SceneRotation = Float4x4::Identity();
     bool ForceSRGB = false;
     bool MergeMeshes = true;
 };

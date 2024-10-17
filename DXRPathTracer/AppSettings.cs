@@ -3,7 +3,8 @@ enum Scenes
     Sponza = 0,
     SunTemple,
     BoxTest,
-    WhiteFurnace
+    WhiteFurnace,
+    Bistro
 }
 
 enum MSAAModes
