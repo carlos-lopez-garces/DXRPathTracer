@@ -122,7 +122,7 @@ void LoadMaterialResources(Array<MeshMaterial>& materials, const wstring& direct
     }
 }
 
-void Mesh::InitFromAssimpMesh(const aiMesh& assimpMesh, float sceneScale, MeshVertex* dstVertices, uint8* dstIndices, IndexType indexType_)
+void Mesh::InitFromAssimpMesh(const aiMesh& assimpMesh, const Float4x4& sceneRotation, float sceneScale, MeshVertex* dstVertices, uint8* dstIndices, IndexType indexType_)
 {
     numVertices = assimpMesh.mNumVertices;
     numIndices = assimpMesh.mNumFaces * 3;
@@ -136,7 +136,8 @@ void Mesh::InitFromAssimpMesh(const aiMesh& assimpMesh, float sceneScale, MeshVe
 
         for(uint64 i = 0; i < numVertices; ++i)
         {
-            Float3 position = ConvertVector(assimpMesh.mVertices[i]) * sceneScale;
+            Float3 position = Float3::Transform(ConvertVector(assimpMesh.mVertices[i]), sceneRotation) * sceneScale;
+
             aabbMin.x = Min(aabbMin.x, position.x);
             aabbMin.y = Min(aabbMin.y, position.y);
             aabbMin.z = Min(aabbMin.z, position.z);
@@ -564,7 +565,7 @@ void Model::CreateWithAssimp(const ModelLoadSettings& settings)
     uint64 idxOffset = 0;
     for(uint64 i = 0; i < numMeshes; ++i)
     {
-        meshes[i].InitFromAssimpMesh(*scene->mMeshes[i], settings.SceneScale, &vertices[vtxOffset], &indices[idxOffset], indexType);
+        meshes[i].InitFromAssimpMesh(*scene->mMeshes[i], settings.SceneRotation, settings.SceneScale, &vertices[vtxOffset], &indices[idxOffset], indexType);
 
         aabbMin.x = Min(aabbMin.x, meshes[i].AABBMin().x);
         aabbMin.y = Min(aabbMin.y, meshes[i].AABBMin().y);

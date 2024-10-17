@@ -1058,6 +1058,14 @@ void Float4x4::Scale(const Float3& scale)
     _33 *= scale.z;
 }
 
+Float4x4 Float4x4::Identity()
+{
+    return Float4x4(Float4(1.0f, 0.0f, 0.0f, 0.0f),
+                    Float4(0.0f, 1.0f, 0.0f, 0.0f),
+                    Float4(0.0f, 0.0f, 1.0f, 0.0f),
+                    Float4(0.0f, 0.0f, 0.0f, 1.0f));
+}
+
 Float4x4 Float4x4::Transpose(const Float4x4& m)
 {
     return Float4x4(XMMatrixTranspose(m.ToSIMD()));

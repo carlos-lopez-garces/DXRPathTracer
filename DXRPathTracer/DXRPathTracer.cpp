@@ -39,13 +39,21 @@ static const wchar* ScenePaths[] =
     L"..\\Content\\Models\\SunTemple\\SunTemple.fbx",
     nullptr,
     L"..\\Content\\Models\\WhiteFurnace\\WhiteFurnace.fbx",
+    L"..\\Content\\Models\\Bistro\\BistroExterior.fbx",
 };
 
-static const wchar* SceneTextureDirs[] = { nullptr, L"Textures", nullptr, nullptr };
-static const float SceneScales[] = { 0.01f, 0.005f, 1.0f, 1.0f };
-static const Float3 SceneCameraPositions[] = { Float3(-11.5f, 1.85f, -0.45f), Float3(-1.0f, 5.5f, 12.0f), Float3(0.0f, 2.5f, -10.0f), Float3(0.0f, 0.0f, -3.0f) };
-static const Float2 SceneCameraRotations[] = { Float2(0.0f, 1.544f), Float2(0.2f, 3.0f), Float2(0.0f, 0.0f), Float2(0.0f, 0.0f) };
-static const Float3 SceneSunDirections[] = { Float3(0.26f, 0.987f, -0.16f), Float3(-0.133022308f, 0.642787635f, 0.75440651f), Float3(0.26f, 0.987f, -0.16f), Float3(0.0f, 1.0f, 0.0f) };
+static const wchar* SceneTextureDirs[] = { nullptr, L"Textures", nullptr, nullptr, L"Textures" };
+static const float SceneScales[] = { 0.01f, 0.005f, 1.0f, 1.0f, 0.005f };
+static const Float4x4 SceneRotations[] = {
+    Float4x4::Identity(),
+    Float4x4::Identity(),
+    Float4x4::Identity(),
+    Float4x4::Identity(),
+    Float4x4::RotationAxisAngle(Float3(1, 0, 0), Pi_2)
+};
+static const Float3 SceneCameraPositions[] = { Float3(-11.5f, 1.85f, -0.45f), Float3(-1.0f, 5.5f, 12.0f), Float3(0.0f, 2.5f, -10.0f), Float3(0.0f, 0.0f, -3.0f), Float3(0.0f, 0.0f, 0.0f) };
+static const Float2 SceneCameraRotations[] = { Float2(0.0f, 1.544f), Float2(0.2f, 3.0f), Float2(0.0f, 0.0f), Float2(0.0f, 0.0f), Float2(0.0f, 0.0f) };
+static const Float3 SceneSunDirections[] = { Float3(0.26f, 0.987f, -0.16f), Float3(-0.133022308f, 0.642787635f, 0.75440651f), Float3(0.26f, 0.987f, -0.16f), Float3(0.0f, 1.0f, 0.0f), Float3(0.0f, 1.0f, 0.0f) };
 
 StaticAssert_(ArraySize_(ScenePaths) == uint64(Scenes::NumValues));
 StaticAssert_(ArraySize_(SceneTextureDirs) == uint64(Scenes::NumValues));
@@ -612,6 +620,7 @@ void DXRPathTracer::InitializeScene()
             settings.FilePath = ScenePaths[currSceneIdx];
             settings.TextureDir = SceneTextureDirs[currSceneIdx];
             settings.ForceSRGB = true;
+            settings.SceneRotation = SceneRotations[currSceneIdx];
             settings.SceneScale = SceneScales[currSceneIdx];
             settings.MergeMeshes = false;
             sceneModels[currSceneIdx].CreateWithAssimp(settings);

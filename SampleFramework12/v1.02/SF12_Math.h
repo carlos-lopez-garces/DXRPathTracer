@@ -258,6 +258,7 @@ struct Float4x4
 
     void Scale(const Float3& scale);
 
+    static Float4x4 Identity();
     static Float4x4 Transpose(const Float4x4& m);
     static Float4x4 Invert(const Float4x4& m);
     static Float4x4 RotationAxisAngle(const Float3& axis, float angle);
